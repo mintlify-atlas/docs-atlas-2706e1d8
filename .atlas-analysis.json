@@ -1,0 +1,84 @@
+{
+  "projectType": "saas",
+  "projectName": "Snipit",
+  "projectDescription": "A web app for sharing MP3/MP4 music files with friends through private groups, with Spotify local file integration.",
+  "theme": "almond",
+  "primaryColor": "#1DB954",
+  "lightColor": "#1DB954",
+  "darkColor": "#158a3e",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/groups",
+              "features/uploading",
+              "features/sharing",
+              "features/inviting"
+            ]
+          },
+          {
+            "group": "Self-Hosting",
+            "pages": [
+              "self-hosting/setup",
+              "self-hosting/environment-variables",
+              "self-hosting/database"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/overview"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "pages": [
+              "api-reference/groups",
+              "api-reference/upload-file",
+              "api-reference/confirm-invite"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Create private music-sharing groups with friends",
+    "Upload MP3/MP4 audio files to groups",
+    "Invite members to groups via email",
+    "Download tracks shared within your groups",
+    "Dashboard with recently uploaded tracks across all groups",
+    "Spotify local file integration support",
+    "Authentication via Supabase (email/password)"
+  ],
+  "publicApiSurface": [
+    "GET /api/groups?user_id={id} — list groups for a user",
+    "POST /api/groups — create a new group",
+    "POST /api/upload-file — upload a music file to Supabase storage",
+    "POST /api/confirm-invite — add a user to a group",
+    "POST /api/download-content — download a track",
+    "Server Action: uploadFileToSupabase(file)",
+    "Server Action: uploadMusic(fileMetadata, title, artist, groupId)",
+    "Server Action: getTracksForGroup(groupId)",
+    "Server Action: getTracksFromUser(userId)",
+    "Server Action: getTracksFromAllGroups(userId)",
+    "Server Action: searchTracks(query)",
+    "Server Action: getGroupMembers(groupId)"
+  ]
+}
