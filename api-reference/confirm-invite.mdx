@@ -1,0 +1,56 @@
+---
+title: "Confirm invite"
+description: "Add a user to a group after accepting an invitation"
+---
+
+## POST /api/confirm-invite
+
+Inserts a row into the `group_members` table, granting the specified user access to the group.
+
+<Note>
+  This endpoint is called automatically when a user visits an invite link. You do not need to call it manually unless you are building a custom invitation flow.
+</Note>
+
+### Request body
+
+<ParamField body="user_id" type="string" required>
+  UUID of the user accepting the invitation.
+</ParamField>
+
+<ParamField body="group_id" type="string" required>
+  UUID of the group the user is joining.
+</ParamField>
+
+### Response
+
+<ResponseField name="text" type="string">
+  Returns `"success"` when the membership row was created.
+</ResponseField>
+
+<CodeGroup>
+
+```bash Request
+curl --request POST \
+  'https://your-snipit-domain.com/api/confirm-invite' \
+  --cookie 'sb-access-token=YOUR_SESSION_COOKIE' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "user_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "group_id": "f7e6d5c4-b3a2-1098-fedc-ba9876543210"
+  }'
+```
+
+```json Response
+{
+  "text": "success"
+}
+```
+
+</CodeGroup>
+
+### Errors
+
+| Status | Body | Cause |
+|---|---|---|
+| `500` | `{ "error": "Missing user id or group id" }` | Either `user_id` or `group_id` was omitted from the request body |
+| `500` | `{ "error": "<message>" }` | Database insert into `group_members` failed (e.g. the user is already a member) |

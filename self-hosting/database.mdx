@@ -1,0 +1,197 @@
+---
+title: "Database setup"
+description: "Configure Supabase database tables, storage, and functions for Snipit"
+---
+
+Snipit requires four tables, one view, one database function, and one storage bucket in your Supabase project. Run the SQL statements below in the Supabase **SQL Editor** to set everything up.
+
+<Warning>
+  Enable Row Level Security (RLS) on all tables before going to production. The `CREATE TABLE` statements below include `ENABLE ROW LEVEL SECURITY`, but you must also write RLS policies that match your access requirements. Without policies, RLS blocks all access by default.
+</Warning>
+
+## Setup
+
+<Steps>
+  <Step title="Create the groups table">
+    The `groups` table stores each private group that users can create and belong to.
+
+    ```sql
+    CREATE TABLE public.groups (
+      id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      name        text NOT NULL,
+      description text,
+      created_by  uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+      created_at  timestamptz NOT NULL DEFAULT now()
+    );
+
+    ALTER TABLE public.groups ENABLE ROW LEVEL SECURITY;
+    ```
+  </Step>
+
+  <Step title="Create the group_members table">
+    The `group_members` table tracks which users belong to which groups. Both `group_id` and `member_id` together form the natural key.
+
+    ```sql
+    CREATE TABLE public.group_members (
+      group_id   uuid NOT NULL REFERENCES public.groups(id) ON DELETE CASCADE,
+      member_id  uuid NOT NULL,
+      joined_at  timestamptz NOT NULL DEFAULT now(),
+      PRIMARY KEY (group_id, member_id)
+    );
+
+    ALTER TABLE public.group_members ENABLE ROW LEVEL SECURITY;
+    ```
+
+    <Note>
+      `member_id` references `users_view.id`, which is created in the next step. The foreign key constraint in the application type definitions points to `users_view`, so ensure that view exists before adding a formal FK constraint.
+    </Note>
+  </Step>
+
+  <Step title="Create the tracks table">
+    The `tracks` table stores metadata for every uploaded MP3 file, including the Supabase Storage path and public URL.
+
+    ```sql
+    CREATE TABLE public.tracks (
+      id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      title       text NOT NULL,
+      artist      text NOT NULL,
+      album       text,
+      genre       text,
+      year        integer,
+      duration    numeric,
+      file_path   text NOT NULL,
+      file_url    text NOT NULL,
+      file_type   text NOT NULL,
+      file_size   bigint NOT NULL,
+      group_id    uuid NOT NULL REFERENCES public.groups(id) ON DELETE CASCADE,
+      uploaded_by uuid NOT NULL,
+      upload_date timestamptz DEFAULT now(),
+      plays       integer DEFAULT 0
+    );
+
+    ALTER TABLE public.tracks ENABLE ROW LEVEL SECURITY;
+    ```
+  </Step>
+
+  <Step title="Create the user_uploads table">
+    The `user_uploads` table records each upload link generated for a user within a group, used for tracking upload activity.
+
+    ```sql
+    CREATE TABLE public.user_uploads (
+      upload_link text NOT NULL,
+      user_id     uuid NOT NULL,
+      group_id    uuid REFERENCES public.groups(id) ON DELETE SET NULL,
+      created_at  timestamptz NOT NULL DEFAULT now(),
+      PRIMARY KEY (upload_link)
+    );
+
+    ALTER TABLE public.user_uploads ENABLE ROW LEVEL SECURITY;
+    ```
+  </Step>
+
+  <Step title="Create the users_view view">
+    The `users_view` view exposes `id` and `email` from `auth.users` to the public schema, allowing queries from application code without direct access to the `auth` schema.
+
+    ```sql
+    CREATE OR REPLACE VIEW public.users_view AS
+    SELECT
+      id,
+      email
+    FROM auth.users;
+    ```
+
+    <Note>
+      Supabase does not expose `auth.users` to the public schema by default. This view is required for the `group_members` and `user_uploads` foreign key relationships and for the `getGroupMembers` server action to resolve member email addresses.
+    </Note>
+  </Step>
+
+  <Step title="Create the get_tracks_with_user_emails function">
+    This function returns a JSON array of tracks for a given group, enriched with the uploader's email address. It is used to display the uploader alongside each track.
+
+    ```sql
+    CREATE OR REPLACE FUNCTION public.get_tracks_with_user_emails(p_group_id uuid)
+    RETURNS json[]
+    LANGUAGE sql
+    SECURITY DEFINER
+    AS $$
+      SELECT array_agg(
+        row_to_json(t) || jsonb_build_object('email', u.email)
+      )
+      FROM public.tracks t
+      JOIN public.users_view u ON u.id = t.uploaded_by
+      WHERE t.group_id = p_group_id
+      ORDER BY t.upload_date DESC;
+    $$;
+    ```
+
+    <Note>
+      `SECURITY DEFINER` allows the function to read `users_view` on behalf of any caller. This is intentional — it is the mechanism that lets group members see uploader emails without needing direct access to the view.
+    </Note>
+  </Step>
+
+  <Step title="Create the mp4 storage bucket">
+    Snipit uploads files to a Supabase Storage bucket named `mp4`. Files are stored under the `uploads/` prefix and served via public URLs.
+
+    Run this in the **SQL Editor**:
+
+    ```sql
+    INSERT INTO storage.buckets (id, name, public)
+    VALUES ('mp4', 'mp4', true);
+    ```
+
+    Or create it through the Supabase dashboard:
+
+    1. Go to **Storage** in the left sidebar.
+    2. Click **New bucket**.
+    3. Name it exactly `mp4`.
+    4. Enable **Public bucket** so uploaded files can be accessed via their public URL.
+    5. Click **Save**.
+
+    <Warning>
+      The bucket name must be exactly `mp4`. The storage client in `src/lib/actions.ts` calls `supabase.storage.from("mp4")` and will fail if the bucket does not exist or is named differently.
+    </Warning>
+  </Step>
+</Steps>
+
+## Row Level Security
+
+Enabling RLS blocks all access to a table by default until you add policies. Below are example policies to get you started — adjust them to match your application's access requirements.
+
+```sql
+-- Allow authenticated users to read groups they are members of
+CREATE POLICY "Members can read their groups"
+  ON public.groups FOR SELECT
+  TO authenticated
+  USING (
+    id IN (
+      SELECT group_id FROM public.group_members
+      WHERE member_id = auth.uid()
+    )
+  );
+
+-- Allow group members to read tracks in their groups
+CREATE POLICY "Members can read tracks in their groups"
+  ON public.tracks FOR SELECT
+  TO authenticated
+  USING (
+    group_id IN (
+      SELECT group_id FROM public.group_members
+      WHERE member_id = auth.uid()
+    )
+  );
+
+-- Allow authenticated users to insert tracks into groups they belong to
+CREATE POLICY "Members can upload tracks"
+  ON public.tracks FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    group_id IN (
+      SELECT group_id FROM public.group_members
+      WHERE member_id = auth.uid()
+    )
+  );
+```
+
+<Info>
+  Storage buckets also support access policies. Consider adding a storage policy that restricts uploads to authenticated users if you do not want anonymous file uploads.
+</Info>

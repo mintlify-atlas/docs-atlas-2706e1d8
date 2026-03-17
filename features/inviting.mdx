@@ -1,0 +1,53 @@
+---
+title: "Inviting members"
+description: "Grow your group by inviting friends"
+---
+
+You can invite anyone with a Snipit account to join a group by sharing an invite link. Invite links are unique to each group and can be copied and sent through any channel — chat, email, or otherwise.
+
+<Warning>
+  The person you invite must already have a Snipit account before they can accept an invitation. If they do not have an account, they will be redirected to the login page and will need to sign up first. After signing up, they can visit the original invite link to complete the process.
+</Warning>
+
+## Invite workflow
+
+<Steps>
+  <Step title="Open the Invite Members dialog">
+    Navigate to the group page and click **Invite Members** in the header, or click the **Invite Members** button in the Members sidebar.
+  </Step>
+  <Step title="Copy the invite link">
+    The dialog displays a pre-generated invite link in the format:
+
+    ```
+    https://your-domain.com/invite_user?group_id=<group-uuid>
+    ```
+
+    Click the copy button to the right of the link field. A confirmation toast appears when the link is copied to your clipboard.
+  </Step>
+  <Step title="Share the link">
+    Send the copied link to the person you want to invite via any method — direct message, email, etc.
+  </Step>
+  <Step title="Invitee opens the link">
+    When the recipient opens the link, they are taken to the **Group Invitation** page. The page validates the group ID and shows them the name of the group they are joining.
+
+    If they are not logged in, they are redirected to the login page. After authenticating, they are returned to the invite page automatically.
+  </Step>
+  <Step title="Membership is confirmed">
+    The invite page automatically adds the invitee to the group's `group_members` table. A success message is displayed and they are redirected to their dashboard within two seconds.
+  </Step>
+</Steps>
+
+<Note>
+  Once a member joins a group, they have full access to everything in that group — they can view all tracks in the **Shared Tracks** list, download any file, and upload their own tracks. They also appear in the **Members** sidebar alongside their join date.
+</Note>
+
+## How invite links work
+
+Invite links contain a single query parameter: `group_id`. When the link is opened:
+
+1. The app validates that a group with that ID exists.
+2. It checks whether the user is authenticated.
+3. It calls the `/api/confirm-invite` endpoint with the user's ID and the group ID.
+4. The endpoint inserts a new row into `group_members`, linking the user to the group.
+
+There is no expiry on invite links. The same link can be used by multiple people to join the group. Keep the link private if you want to control who can join.

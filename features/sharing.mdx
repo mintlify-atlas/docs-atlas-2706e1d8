@@ -1,0 +1,40 @@
+---
+title: "Sharing and downloading tracks"
+description: "Access and download tracks shared in your groups"
+---
+
+Every track uploaded to a group is immediately available to all group members. You can browse tracks on the group page and download any file directly to your device.
+
+## Viewing shared tracks
+
+Open a group from your dashboard to see its **Shared Tracks** list. Each track entry displays:
+
+- **Track title** and **artist name**
+- The email address of the member who uploaded the track (shown as *Shared by ...*)  
+- The date the track was uploaded
+
+The list is ordered by upload date, with the most recently added tracks at the top.
+
+## Downloading a track
+
+<Steps>
+  <Step title="Open the group page">
+    From your dashboard, click the group that contains the track you want to download.
+  </Step>
+  <Step title="Find the track">
+    Scroll through the **Shared Tracks** list to locate the track by title or artist.
+  </Step>
+  <Step title="Click Download">
+    Click the **Download** button on the right side of the track row. The file is fetched from Supabase Storage and saved to your device using the filename format `{artist} - {title}.{extension}`.
+  </Step>
+</Steps>
+
+## Recently uploaded view
+
+Your dashboard includes a **Recently Uploaded** section that aggregates the latest tracks from all groups you belong to — not just one group at a time. Each track in this view also shows the group it came from, so you can quickly navigate to the right group for context or to find related tracks.
+
+This view is powered by a query that joins your group memberships to the `tracks` table, orders results by `upload_date` descending, and includes the `groups.name` field alongside each track.
+
+<Tip>
+  Downloaded tracks can be added to Spotify as local files. Place the downloaded `.mp3` file in a folder that Spotify is configured to scan for local files, then enable **Local Files** in Spotify's settings. The track will appear in your local files library and can be added to any playlist — including playlists you share with friends who also have the file.
+</Tip>

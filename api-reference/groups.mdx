@@ -1,0 +1,141 @@
+---
+title: "Groups API"
+description: "List and create music-sharing groups"
+---
+
+## GET /api/groups
+
+Returns all groups that a given user belongs to, including nested group details for each membership record.
+
+### Query parameters
+
+<ParamField query="user_id" type="string" required>
+  The authenticated user's UUID. Filters the `group_members` table by this value.
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object[]">
+  Array of group membership records.
+  <Expandable title="properties">
+    <ResponseField name="member_id" type="string">
+      UUID of the member.
+    </ResponseField>
+    <ResponseField name="group_id" type="string">
+      UUID of the group.
+    </ResponseField>
+    <ResponseField name="joined_at" type="string">
+      ISO 8601 timestamp of when the user joined the group.
+    </ResponseField>
+    <ResponseField name="groups" type="object">
+      Nested group details.
+      <Expandable title="properties">
+        <ResponseField name="id" type="string">
+          UUID of the group.
+        </ResponseField>
+        <ResponseField name="name" type="string">
+          Display name of the group.
+        </ResponseField>
+        <ResponseField name="created_by" type="string | null">
+          Email address of the user who created the group.
+        </ResponseField>
+        <ResponseField name="description" type="string | null">
+          Optional description of the group.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<CodeGroup>
+
+```bash Request
+curl 'https://your-snipit-domain.com/api/groups?user_id=a1b2c3d4-e5f6-7890-abcd-ef1234567890' \
+  --cookie 'sb-access-token=YOUR_SESSION_COOKIE'
+```
+
+```json Response
+{
+  "data": [
+    {
+      "member_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "group_id": "f7e6d5c4-b3a2-1098-fedc-ba9876543210",
+      "joined_at": "2024-03-01T12:00:00.000Z",
+      "groups": {
+        "id": "f7e6d5c4-b3a2-1098-fedc-ba9876543210",
+        "name": "Demo Tracks",
+        "created_by": "alice@example.com",
+        "description": "Unreleased demos from the band"
+      }
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+### Errors
+
+| Status | Body | Cause |
+|---|---|---|
+| `200` (empty response) | `No user id provided` | `user_id` query parameter was omitted. Note: this returns a plain text `200` rather than a JSON error. |
+| `500` | `{ "error": "error fetching groups" }` | Database query failed |
+
+---
+
+## POST /api/groups
+
+Creates a new group and automatically adds the creator as the first member.
+
+### Request body
+
+<ParamField body="name" type="string" required>
+  Display name for the group.
+</ParamField>
+
+<ParamField body="description" type="string">
+  Optional description of the group's purpose.
+</ParamField>
+
+<ParamField body="userEmail" type="string" required>
+  Email address of the authenticated user. Stored in the `created_by` field on the group record.
+</ParamField>
+
+<ParamField body="userId" type="string" required>
+  UUID of the authenticated user. Used to create the initial `group_members` row.
+</ParamField>
+
+### Response
+
+Returns an empty JSON object on success.
+
+<ResponseField name="(empty object)" type="object">
+  `{}` — the group and membership records were created successfully.
+</ResponseField>
+
+<CodeGroup>
+
+```bash Request
+curl --request POST \
+  'https://your-snipit-domain.com/api/groups' \
+  --cookie 'sb-access-token=YOUR_SESSION_COOKIE' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "name": "Demo Tracks",
+    "description": "Unreleased demos from the band",
+    "userEmail": "alice@example.com",
+    "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+  }'
+```
+
+```json Response
+{}
+```
+
+</CodeGroup>
+
+### Errors
+
+| Status | Body | Cause |
+|---|---|---|
+| `500` | `{ "error": "<message>" }` | Failed to insert into `groups` or `group_members` |

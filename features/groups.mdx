@@ -1,0 +1,59 @@
+---
+title: "Groups"
+description: "Create and manage private music-sharing circles"
+---
+
+A group is a private space where members can upload and download tracks. Only people you invite can see the group's tracks or join as members. Every track you upload is tied to a specific group, so your music stays within the audience you choose.
+
+<Info>
+  Groups are invite-only. Anyone with a Snipit account can be invited, but no one can discover or join a group without an invitation link from a current member.
+</Info>
+
+## Creating a group
+
+<Steps>
+  <Step title="Open the Create Group dialog">
+    From your dashboard, click the **Create Group** button in the top-right area of the groups section.
+  </Step>
+  <Step title="Enter a group name">
+    Type a name in the **Group Name** field. This field is required — the form will not submit without it.
+  </Step>
+  <Step title="Add a description (optional)">
+    Use the **Description** field to give members context about the group's purpose, for example: *"Unreleased demos from the band"* or *"Local files for our shared Spotify playlist"*.
+  </Step>
+  <Step title="Submit the form">
+    Click **Create Group**. The group is created immediately and appears on your dashboard. You are automatically added as the first member.
+  </Step>
+</Steps>
+
+## Viewing your groups
+
+All groups you belong to — whether you created them or joined via an invite — appear on your dashboard as cards. Each card shows the group name and description.
+
+Click a group card to open the group page, which shows:
+
+- The group name and description in the header
+- The total member count and track count
+- A **Shared Tracks** list with all uploaded files
+- A **Members** sidebar listing every member and their join date
+
+## Group page actions
+
+From the group page header you can:
+
+- Click **Upload Track** to add a new audio file to the group
+- Click **Invite Members** to generate an invite link and share it with others
+
+## Group data model
+
+Groups are stored in the `groups` table in Supabase with the following fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | `string` | Unique identifier (UUID) for the group |
+| `name` | `string` | Display name of the group (required) |
+| `description` | `string \| null` | Optional description of the group's purpose |
+| `created_by` | `string \| null` | Email address of the user who created the group |
+| `created_at` | `string` | ISO 8601 timestamp of when the group was created |
+
+Membership is tracked separately in the `group_members` table, which links a `member_id` (user UUID) to a `group_id` along with a `joined_at` timestamp.

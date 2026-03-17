@@ -1,0 +1,73 @@
+---
+title: "API overview"
+description: "REST API endpoints available in Snipit"
+---
+
+Snipit exposes a set of REST API endpoints built as [Next.js Route Handlers](https://nextjs.org/docs/app/building-your-application/routing/route-handlers). All endpoints live under the `/api/*` path.
+
+## Base URL
+
+Endpoints are relative to the root of your Snipit deployment:
+
+```
+https://your-snipit-domain.com/api
+```
+
+When running locally the base URL is `http://localhost:3000/api`.
+
+## Authentication
+
+All endpoints require a valid Supabase session cookie. Authentication is enforced by Next.js middleware (`middleware.ts`) that runs on every request and validates the session before it reaches a route handler.
+
+If your session cookie is missing or expired, the server will redirect you to the login page rather than returning a JSON error. To obtain a session cookie, sign in through the Snipit UI.
+
+<Warning>
+  There is no API key or Bearer token authentication. All requests must originate from an authenticated browser session or an HTTP client that forwards the session cookie.
+</Warning>
+
+## Request and response format
+
+All endpoints accept and return **JSON** (`Content-Type: application/json`) unless noted otherwise.
+
+The upload endpoint uses `multipart/form-data` because it receives a file.
+
+### Error format
+
+When an endpoint fails it returns a JSON object with a single `error` field and an appropriate HTTP status code:
+
+```json
+{
+  "error": "Description of what went wrong"
+}
+```
+
+| Status code | When it is returned |
+|---|---|
+| `400` | Required field or file is missing from the request |
+| `401` | The request is not authenticated |
+| `500` | A database or storage operation failed |
+
+## Server actions
+
+Snipit also uses Next.js Server Actions (defined in `src/lib/actions.ts`) for operations like associating an uploaded file with a track record (`uploadMusic`) and fetching tracks. Server actions are **not** part of the public REST API — they are called directly from React Server Components and cannot be invoked with `curl` or a regular HTTP client.
+
+## Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/groups` | List all groups the authenticated user belongs to |
+| `POST` | `/api/groups` | Create a new group |
+| `POST` | `/api/upload-file` | Upload an audio file to Supabase storage |
+| `POST` | `/api/confirm-invite` | Add a user to a group after accepting an invite |
+
+<CardGroup cols={2}>
+  <Card title="Groups API" icon="users" href="/api-reference/groups">
+    List and create music-sharing groups.
+  </Card>
+  <Card title="Upload file" icon="upload" href="/api-reference/upload-file">
+    Upload an audio file to Supabase storage.
+  </Card>
+  <Card title="Confirm invite" icon="user-plus" href="/api-reference/confirm-invite">
+    Add a user to a group after they accept an invitation.
+  </Card>
+</CardGroup>

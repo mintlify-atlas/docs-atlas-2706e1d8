@@ -1,0 +1,60 @@
+---
+title: "Introduction"
+description: "What Snipit is, who it's for, and how it works"
+---
+
+Snipit is a private music-sharing platform built for people who collect and curate local audio files. Create a group, upload your MP3s, invite your friends, and let them download and listen — all without making your music public.
+
+It works especially well for Spotify local files: download a shared track, add it to Spotify's local files folder, and it appears in your playlists alongside your streamed music.
+
+## Who it's for
+
+Snipit is built for music enthusiasts who have personal collections that don't exist on streaming platforms — rare recordings, live sets, self-produced tracks, or music shared between close friends. If you've ever emailed a friend an MP3 or dropped files in a shared folder, Snipit gives you a cleaner, group-based way to do that.
+
+## How it works
+
+The core workflow is straightforward:
+
+1. **Sign up** using your Google account — no password required.
+2. **Create a group** — a private circle with a name and description.
+3. **Upload a track** — provide a title, artist name, and an MP3 or MP4 audio file (up to 50 MB).
+4. **Invite friends** — generate an invite link and send it to anyone you want to join.
+5. **Download tracks** — any group member can download files shared within the group.
+
+Your dashboard shows recently uploaded tracks from all your groups in a single view, so you never miss a new upload.
+
+## Key concepts
+
+### Groups
+
+A group is a private music-sharing circle. You create it with a name and an optional description. Only members you invite can see or download the tracks inside. You can belong to multiple groups — for example, one for close friends and another for a music production circle.
+
+### Tracks
+
+A track is an uploaded audio file with associated metadata. When you upload a file, you provide:
+
+- **Title** — the name of the track
+- **Artist** — the artist or creator
+
+Snipit also records the uploader, upload date, file type, and file size automatically. Tracks are stored in Supabase Storage and linked to the group they were shared in.
+
+### Members
+
+Members are users who belong to a group. When someone accepts an invite link, they join the group and gain access to all tracks shared within it. The dashboard displays each member's username, derived from their Google account email.
+
+## Get started
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Create your account, set up a group, and share your first track in under 5 minutes.
+  </Card>
+  <Card title="Groups" icon="users" href="/features/groups">
+    Learn how to create and manage private music-sharing circles.
+  </Card>
+  <Card title="Uploading" icon="upload" href="/features/uploading">
+    Understand the upload flow, supported file types, and metadata fields.
+  </Card>
+  <Card title="Inviting" icon="user-plus" href="/features/inviting">
+    Invite friends to your groups using shareable invite links.
+  </Card>
+</CardGroup>

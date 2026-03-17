@@ -1,0 +1,71 @@
+---
+title: "Upload file"
+description: "Upload a music file to Supabase storage"
+---
+
+## POST /api/upload-file
+
+Uploads an audio file to the Supabase `mp4` storage bucket. Returns the file's storage path, public URL, and metadata.
+
+<Note>
+  This endpoint only uploads the file to storage. To associate the file with a track record inside a group, pass the returned metadata to the `uploadMusic` server action.
+</Note>
+
+### Request
+
+**Content-Type:** `multipart/form-data`
+
+<ParamField body="file" type="file" required>
+  The audio file to upload. The content type and original filename are preserved. The file is stored at `uploads/<timestamp>-<random>.<ext>` inside the `mp4` bucket.
+</ParamField>
+
+### Response
+
+<ResponseField name="filePath" type="string">
+  The path to the file within the `mp4` storage bucket, e.g. `uploads/1711234567890-abc123def.mp3`.
+</ResponseField>
+
+<ResponseField name="fileUrl" type="string">
+  The public URL for the uploaded file.
+</ResponseField>
+
+<ResponseField name="fileType" type="string">
+  The MIME type of the uploaded file, e.g. `audio/mpeg`.
+</ResponseField>
+
+<ResponseField name="fileSize" type="number">
+  The size of the file in bytes.
+</ResponseField>
+
+<ResponseField name="fileName" type="string">
+  The original filename as provided by the client, e.g. `my-track.mp3`.
+</ResponseField>
+
+<CodeGroup>
+
+```bash Request
+curl --request POST \
+  'https://your-snipit-domain.com/api/upload-file' \
+  --cookie 'sb-access-token=YOUR_SESSION_COOKIE' \
+  --form 'file=@/path/to/my-track.mp3'
+```
+
+```json Response
+{
+  "filePath": "uploads/1711234567890-k3z9mxqab12.mp3",
+  "fileUrl": "https://xxxxxxxxxxxx.supabase.co/storage/v1/object/public/mp4/uploads/1711234567890-k3z9mxqab12.mp3",
+  "fileType": "audio/mpeg",
+  "fileSize": 4823142,
+  "fileName": "my-track.mp3"
+}
+```
+
+</CodeGroup>
+
+### Errors
+
+| Status | Body | Cause |
+|---|---|---|
+| `400` | `{ "error": "No file provided" }` | The `file` form field was missing from the request |
+| `401` | `{ "error": "Unauthorized. User must be logged in to upload files." }` | No valid session cookie was present |
+| `500` | `{ "error": "<message>" }` | Supabase storage upload failed |

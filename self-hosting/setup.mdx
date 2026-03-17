@@ -1,0 +1,119 @@
+---
+title: "Setup"
+description: "Deploy your own instance of Snipit"
+---
+
+This guide walks through deploying a self-hosted instance of Snipit — the Next.js + Supabase app for sharing MP3 files through private groups.
+
+## Prerequisites
+
+Before you begin, make sure you have the following:
+
+- **Node.js 18+** — Snipit requires Node.js 18 or later. Check your version with `node -v`.
+- **A Supabase account** — Sign up at [supabase.com](https://supabase.com). The free tier is sufficient to get started.
+- **Git** — To clone the repository.
+- **A package manager** — npm (bundled with Node.js), yarn, pnpm, or bun.
+
+## Setup
+
+<Steps>
+  <Step title="Clone the repository">
+    Clone the Snipit repository to your local machine:
+
+    ```bash
+    git clone https://github.com/your-org/snipit.git
+    cd snipit
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    Install the project dependencies using your preferred package manager:
+
+    <CodeGroup>
+
+    ```bash npm
+    npm install
+    ```
+
+    ```bash yarn
+    yarn install
+    ```
+
+    ```bash pnpm
+    pnpm install
+    ```
+
+    ```bash bun
+    bun install
+    ```
+
+    </CodeGroup>
+  </Step>
+
+  <Step title="Create a Supabase project">
+    1. Go to your [Supabase dashboard](https://supabase.com/dashboard) and click **New project**.
+    2. Choose an organization, give the project a name, set a database password, and select a region.
+    3. Wait for the project to finish provisioning (about 1–2 minutes).
+    4. Once ready, go to **Project Settings → API** to find your project URL and API keys.
+  </Step>
+
+  <Step title="Configure environment variables">
+    Create a `.env.local` file in the project root and add your Supabase credentials:
+
+    ```bash
+    cp .env.example .env.local
+    ```
+
+    If there is no `.env.example`, create `.env.local` manually:
+
+    ```bash .env.local
+    NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+    NEXT_PUBLIC_SUPABASE_KEY=your-anon-key
+    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+    ```
+
+    See the [Environment variables](/self-hosting/environment-variables) page for a full description of each variable and where to find it.
+  </Step>
+
+  <Step title="Run database migrations">
+    Set up the required tables, views, functions, and storage bucket in your Supabase project. Follow the [Database setup](/self-hosting/database) guide for the full SQL to run in the Supabase SQL editor.
+  </Step>
+
+  <Step title="Start the development server">
+    ```bash
+    npm run dev
+    ```
+
+    Open [http://localhost:3000](http://localhost:3000) in your browser. You should be redirected to the login page on first load.
+
+    <Note>
+      The middleware redirects all unauthenticated requests to `/login`. You will need at least one user account created in your Supabase project under **Authentication → Users** before you can sign in.
+    </Note>
+  </Step>
+
+  <Step title="Build for production">
+    When you are ready to deploy, build the optimized production bundle:
+
+    ```bash
+    npm run build
+    npm start
+    ```
+
+    The `build` command compiles the Next.js application and `start` runs the production server on port 3000 by default.
+  </Step>
+</Steps>
+
+## Deploying to Vercel
+
+The recommended way to deploy Snipit is with [Vercel](https://vercel.com), the platform built by the creators of Next.js.
+
+1. Push your repository to GitHub, GitLab, or Bitbucket.
+2. Import the repository in the [Vercel dashboard](https://vercel.com/new).
+3. In the **Environment Variables** section, add all the variables from your `.env.local` file.
+4. Click **Deploy**.
+
+Vercel automatically handles builds on every push and manages the Next.js runtime for you. No additional server configuration is required.
+
+<Tip>
+  Set your environment variables in the Vercel project settings under **Settings → Environment Variables** rather than committing them to your repository.
+</Tip>

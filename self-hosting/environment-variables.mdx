@@ -1,0 +1,61 @@
+---
+title: "Environment variables"
+description: "Configure environment variables for your Snipit instance"
+---
+
+Snipit uses environment variables to connect to Supabase. These must be set before starting the development server or deploying.
+
+<Note>
+  Next.js loads environment variables from a `.env.local` file in the project root. This file is listed in `.gitignore` and is never committed to version control. Do not store secrets in `.env`, `.env.development`, or any other file that may be checked in.
+</Note>
+
+## Required variables
+
+<ParamField path="NEXT_PUBLIC_SUPABASE_URL" type="string" required>
+  The URL of your Supabase project. Used by both the browser client (`src/utils/supabase/client.ts`) and the server client (`src/utils/supabase/server.ts`) to connect to the Supabase API.
+
+  Found in your Supabase dashboard under **Project Settings → API → Project URL**.
+
+  Example: `https://abcdefghijklmnop.supabase.co`
+</ParamField>
+
+<ParamField path="NEXT_PUBLIC_SUPABASE_KEY" type="string" required>
+  The public anonymous (anon) key for your Supabase project. This key is safe to expose in the browser and is used for all standard authenticated client requests.
+
+  Found in your Supabase dashboard under **Project Settings → API → Project API keys → anon / public**.
+
+  Example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+</ParamField>
+
+<ParamField path="SUPABASE_SERVICE_ROLE_KEY" type="string" required>
+  The service role key for your Supabase project. This key bypasses Row Level Security and is used in the server action `getGroupMembers` (`src/lib/actions.ts`) to query the `users_view` for member email addresses.
+
+  Found in your Supabase dashboard under **Project Settings → API → Project API keys → service_role / secret**.
+
+  Example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+</ParamField>
+
+<Warning>
+  Never expose `SUPABASE_SERVICE_ROLE_KEY` in the browser or commit it to your repository. Unlike the anon key, the service role key bypasses all Row Level Security policies and grants full access to your database. It is only used in server-side code (`"use server"` actions) and must never be prefixed with `NEXT_PUBLIC_`.
+</Warning>
+
+## Example `.env.local`
+
+```bash .env.local
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+## Where to find your keys
+
+1. Open your project in the [Supabase dashboard](https://supabase.com/dashboard).
+2. Click **Project Settings** in the left sidebar.
+3. Go to the **API** tab.
+4. Copy the values from the **Project URL** and **Project API keys** sections.
+
+| Variable | Dashboard location |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Project Settings → API → Project URL |
+| `NEXT_PUBLIC_SUPABASE_KEY` | Project Settings → API → anon / public |
+| `SUPABASE_SERVICE_ROLE_KEY` | Project Settings → API → service_role / secret |

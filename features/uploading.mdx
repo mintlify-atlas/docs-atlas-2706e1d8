@@ -1,0 +1,59 @@
+---
+title: "Uploading tracks"
+description: "Share your music files with your groups"
+---
+
+You can upload audio files to any group you belong to. Once uploaded, the track is immediately visible to all group members, who can view the metadata and download the file.
+
+<Note>
+  Snipit accepts **MP3** (`audio/mpeg`) and **MP4 audio** (`audio/mp4`) files. The maximum file size is **50 MB**. Files of other types are rejected at the selection step.
+</Note>
+
+## Upload workflow
+
+<Steps>
+  <Step title="Open the upload dialog">
+    Navigate to a group page and click **Upload Track** in the header. You can also open the upload dialog from the dashboard toolbar.
+  </Step>
+  <Step title="Select a file">
+    Drag and drop your file onto the upload area, or click **Select File** to open a file browser. Only `.mp3` and `.mp4` files are accepted. Once selected, the file name and size are shown in the dialog.
+
+    To change your selection, click the **X** button next to the file name and pick a different file.
+  </Step>
+  <Step title="Enter the track title">
+    Type the track title in the **Track Title** field. This field is required.
+  </Step>
+  <Step title="Enter the artist name">
+    Type the artist name in the **Artist** field. This field is required.
+  </Step>
+  <Step title="Choose a group">
+    Select the destination group from the **Share with Group** dropdown. The list shows all groups you are a member of.
+  </Step>
+  <Step title="Submit the upload">
+    Click **Upload Track**. The file is uploaded to Supabase Storage and the track record is created in the database. The group page refreshes automatically to include the new track.
+  </Step>
+</Steps>
+
+## What is stored after upload
+
+When you upload a track, Snipit stores both the file itself and a metadata record. The file is saved to the `uploads` storage bucket. The metadata record in the `tracks` table contains:
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | `string` | Unique identifier (UUID) for the track |
+| `title` | `string` | Track title entered at upload time |
+| `artist` | `string` | Artist name entered at upload time |
+| `album` | `string \| null` | Album name (not currently collected in the upload form) |
+| `genre` | `string \| null` | Genre (not currently collected in the upload form) |
+| `year` | `number \| null` | Release year (not currently collected in the upload form) |
+| `duration` | `number \| null` | Track duration in seconds (not currently collected in the upload form) |
+| `file_path` | `string` | Storage path within the bucket (e.g. `uploads/1234567890-abc.mp3`) |
+| `file_url` | `string` | Public URL for downloading the file |
+| `file_type` | `string` | MIME type of the uploaded file (e.g. `audio/mpeg`) |
+| `file_size` | `number` | File size in bytes |
+| `upload_date` | `string \| null` | ISO 8601 timestamp of when the track was uploaded |
+| `uploaded_by` | `string` | UUID of the user who uploaded the track |
+| `group_id` | `string` | UUID of the group the track belongs to |
+| `plays` | `number \| null` | Play count (reserved for future use) |
+
+`title` and `artist` are the only fields collected from the upload form today. The remaining optional fields (`album`, `genre`, `year`, `duration`) are reserved in the schema and can be populated by future features such as automatic metadata extraction.
